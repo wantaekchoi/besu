@@ -71,6 +71,21 @@ public class EphemeryGenesisUpdater {
       if (currentTimestamp > (genesisTimestamp + PERIOD_IN_SECONDS)) {
         overrides.put("chainId", String.valueOf(updatedChainId));
         overrides.put("timestamp", String.valueOf(updatedTimestamp));
+        // Forks scheduled after genesis (such as the BPO forks) recur at the same offset from
+        // every iteration's genesis, so move them along with the timestamp.
+        genesisConfig
+            .getConfigOptions()
+            .asMap()
+            .forEach(
+                (key, value) -> {
+                  if (key.endsWith("Time")
+                      && value instanceof Number forkTime
+                      && forkTime.longValue() > genesisTimestamp) {
+                    final long offset =
+                        Math.floorMod(forkTime.longValue() - genesisTimestamp, PERIOD_IN_SECONDS);
+                    overrides.put(key, String.valueOf(updatedTimestamp + offset));
+                  }
+                });
       }
       return genesisConfig.withOverrides(overrides);
     } catch (IOException e) {

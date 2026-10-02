@@ -136,4 +136,25 @@ public class EphemeryGenesisUpdaterTest {
     assertThat(override.get("timestamp")).isEqualTo(String.valueOf(expectedGenesisTimestamp));
     assertThat(override.get("chainId")).isEqualTo(expectedChainId.toString());
   }
+
+  @Test
+  public void testBlobParameterOnlyForksKeepTheirOffsetFromTheRolledGenesis() {
+    final GenesisConfig config =
+        EphemeryGenesisUpdater.updateGenesis(new TreeMap<>(String.CASE_INSENSITIVE_ORDER));
+
+    final long genesisTimestamp = config.getTimestamp();
+    assertThat(config.getConfigOptions().getBpo1Time()).hasValue(genesisTimestamp + 787032);
+    assertThat(config.getConfigOptions().getBpo2Time()).hasValue(genesisTimestamp + 1573464);
+  }
+
+  @Test
+  public void testForkTimesLeftInTheOverridesByAPreviousIterationAreReplaced() {
+    // The restart that starts each new iteration passes the same overrides map again.
+    final Map<String, String> overrides = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    overrides.put("bpo1Time", "1762033032");
+
+    final GenesisConfig config = EphemeryGenesisUpdater.updateGenesis(overrides);
+
+    assertThat(config.getConfigOptions().getBpo1Time()).hasValue(config.getTimestamp() + 787032);
+  }
 }
