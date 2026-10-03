@@ -17,6 +17,7 @@ package org.hyperledger.besu.cli.options;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.hyperledger.besu.ethereum.p2p.config.DiscoveryConfiguration;
 import org.hyperledger.besu.ethereum.p2p.config.ImmutableNetworkingConfiguration;
 import org.hyperledger.besu.ethereum.p2p.config.NetworkingConfiguration;
 
@@ -291,11 +292,18 @@ public class NetworkingOptionsTest
 
   @Override
   protected NetworkingConfiguration createCustomizedDomainObject() {
+    final DiscoveryConfiguration discovery = DiscoveryConfiguration.create();
+    discovery.setFilterOnEnrForkId(false);
+    discovery.setDiscV5DiscoveryIntervalSeconds(45);
+    discovery.setDiscV5FastDiscoveryIntervalSeconds(2);
+    discovery.setDiscV5DiscoveryTimeoutSeconds(10);
+    discovery.setDiscV5MinimumPeerRatio(0.5);
     return ImmutableNetworkingConfiguration.builder()
         .initiateConnectionsFrequency(
             NetworkingConfiguration.DEFAULT_INITIATE_CONNECTIONS_FREQUENCY.plusSeconds(10))
         .checkMaintainedConnectionsFrequency(
             NetworkingConfiguration.DEFAULT_CHECK_MAINTAINED_CONNECTIONS_FREQUENCY.plusSeconds(10))
+        .discoveryConfiguration(discovery)
         .build();
   }
 

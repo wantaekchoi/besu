@@ -86,7 +86,7 @@ public class NetworkingOptions implements CLIOptions<NetworkingConfiguration> {
       names = FILTER_ON_ENR_FORK_ID,
       hidden = true,
       description = "Whether to enable filtering of peers based on the ENR field ForkId)")
-  private final Boolean filterOnEnrForkId = NetworkingConfiguration.DEFAULT_FILTER_ON_ENR_FORK_ID;
+  private Boolean filterOnEnrForkId = NetworkingConfiguration.DEFAULT_FILTER_ON_ENR_FORK_ID;
 
   @CommandLine.Option(
       names = DISCV5_DISCOVERY_INTERVAL_SECONDS,
@@ -147,6 +147,15 @@ public class NetworkingOptions implements CLIOptions<NetworkingConfiguration> {
     cliOptions.initiateConnectionsFrequency = networkingConfig.initiateConnectionsFrequency();
     cliOptions.p2pPeerTaskTimeout = networkingConfig.p2pPeerTaskTimeout();
     cliOptions.dnsDiscoveryServerOverride = networkingConfig.dnsDiscoveryServerOverride();
+    final DiscoveryConfiguration discovery = networkingConfig.discoveryConfiguration();
+    cliOptions.filterOnEnrForkId = discovery.isFilterOnEnrForkIdEnabled();
+    cliOptions.discV5DiscoveryIntervalSeconds =
+        Duration.ofSeconds(discovery.getDiscV5DiscoveryIntervalSeconds());
+    cliOptions.discV5FastDiscoveryIntervalSeconds =
+        Duration.ofSeconds(discovery.getDiscV5FastDiscoveryIntervalSeconds());
+    cliOptions.discV5DiscoveryTimeoutSeconds =
+        Duration.ofSeconds(discovery.getDiscV5DiscoveryTimeoutSeconds());
+    cliOptions.discV5MinimumPeerRatio = discovery.getDiscV5MinimumPeerRatio();
 
     return cliOptions;
   }
