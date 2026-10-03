@@ -1,0 +1,26 @@
+{
+  "request": "mutation { sendRawTransaction(data: \"0xf86f1185174876e800830222e0945aae326516b4f8fe08074b7e972e40a713048d628ad3c21bcecceda1000000801ba01786416e60b335f9aea44d979846a0ef0dae166487dbb36ac925cd807ebd688aa04da6acaa8bc1a34eb9d66a34962692c4f8d68cb355550d2a4b089db0b46f760b\") }",
+  "response": {
+    "errors": [
+      {
+        "message": "Exception while fetching data (/sendRawTransaction) : Insufficient funds for transfer",
+        "locations": [
+          {
+            "line": 1,
+            "column": 12
+          }
+        ],
+        "path": [
+          "sendRawTransaction"
+        ],
+        "extensions": {
+          "errorCode": -32004,
+          "errorMessage": "Insufficient funds for transfer",
+          "classification": "DataFetchingException"
+        }
+      }
+    ],
+    "data": null
+  },
+  "statusCode": 400
+}

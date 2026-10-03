@@ -59,6 +59,12 @@ public enum GraphQLError {
   TRANSACTION_UPFRONT_COST_EXCEEDS_BALANCE(-32004, "Upfront cost exceeds account balance"),
 
   /**
+   * Error code -32004. This error occurs when the account balance cannot cover the transferred
+   * value.
+   */
+  INSUFFICIENT_FUNDS_FOR_TRANSFER(-32004, "Insufficient funds for transfer"),
+
+  /**
    * Error code -32005. This error occurs when the transaction gas limit exceeds the block gas
    * limit.
    */
@@ -139,6 +145,7 @@ public enum GraphQLError {
       case REPLAY_PROTECTED_SIGNATURES_NOT_SUPPORTED -> REPLAY_PROTECTED_SIGNATURES_NOT_SUPPORTED;
       case INVALID_SIGNATURE -> INVALID_TRANSACTION_SIGNATURE;
       case UPFRONT_GAS_COST_EXCEEDS_BALANCE -> TRANSACTION_UPFRONT_COST_EXCEEDS_BALANCE;
+      case INSUFFICIENT_FUNDS_FOR_TRANSFER -> INSUFFICIENT_FUNDS_FOR_TRANSFER;
       case NONCE_TOO_LOW -> NONCE_TOO_LOW;
       case NONCE_TOO_HIGH -> INCORRECT_NONCE;
       case INTRINSIC_GAS_EXCEEDS_GAS_LIMIT -> INTRINSIC_GAS_EXCEEDS_LIMIT;

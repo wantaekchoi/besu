@@ -95,6 +95,11 @@ public abstract class AbstractEthGraphQLHttpServiceTest {
     when(transactionPoolMock.addTransactionViaApi(
             ArgumentMatchers.argThat(tx -> tx.getNonce() == 16)))
         .thenReturn(ValidationResult.invalid(TransactionInvalidReason.NONCE_TOO_LOW));
+    // insufficient funds for transfer tests uses a tx with nonce=17
+    Mockito.doReturn(
+            ValidationResult.invalid(TransactionInvalidReason.INSUFFICIENT_FUNDS_FOR_TRANSFER))
+        .when(transactionPoolMock)
+        .addTransactionViaApi(ArgumentMatchers.argThat(tx -> tx.getNonce() == 17));
     Mockito.when(transactionPoolMock.getPendingTransactions())
         .thenReturn(
             Collections.singleton(
