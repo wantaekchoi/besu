@@ -1877,6 +1877,48 @@ public class PeerDiscoveryControllerTest {
     verify(controller, times(1)).connectOnRlpxLayer(eq(maybePeer.get()));
   }
 
+  @Test
+  public void shouldNotRequestEnrFromPeerWhosePongHasNoEnrSeq() {
+    final List<NodeKey> nodeKeys = PeerDiscoveryTestHelper.generateNodeKeys(1);
+    final List<DiscoveryPeerV4> peers = helper.createDiscoveryPeers(nodeKeys);
+    final DiscoveryPeerV4 sender = peers.get(0);
+    final List<PacketType> sentPacketTypes = new ArrayList<>();
+    controller =
+        getControllerBuilder()
+            .peers(sender)
+            .outboundMessageHandler((dp, pa) -> sentPacketTypes.add(pa.getType()))
+            .filterOnForkId(true)
+            .build();
+
+    final PingPacketData mockPing =
+        packetPackage
+            .pingPacketDataFactory()
+            .create(Optional.ofNullable(localPeer.getEndpoint()), sender.getEndpoint(), UInt64.ONE);
+    final Packet mockPacket =
+        packetPackage.packetFactory().create(PacketType.PING, mockPing, nodeKeys.get(0));
+    mockPingPacketCreation(mockPacket);
+
+    controller.start();
+
+    final PongPacketData pongPacketData =
+        packetPackage
+            .pongPacketDataFactory()
+            .create(localPeer.getEndpoint(), mockPacket.getHash(), UInt64.ONE);
+    final Packet pongPacket =
+        spy(packetPackage.packetFactory().create(PacketType.PONG, pongPacketData, nodeKeys.get(0)));
+    // A PONG without enr-seq comes from a node that has no record to hand out (EIP-868).
+    final PongPacketData pongWithoutEnrSeq =
+        packetPackage
+            .pongPacketDataFactory()
+            .create(localPeer.getEndpoint(), mockPacket.getHash(), null);
+    doReturn(Optional.of(pongWithoutEnrSeq)).when(pongPacket).getPacketData(PongPacketData.class);
+    controller.onMessage(pongPacket, sender);
+
+    assertThat(sentPacketTypes).doesNotContain(PacketType.ENR_REQUEST);
+    assertThat(controller.streamDiscoveredPeers().map(DiscoveryPeerV4::getId))
+        .contains(sender.getId());
+  }
+
   @NotNull
   private Packet prepareForForkIdCheck(
       final List<NodeKey> nodeKeys, final DiscoveryPeerV4 sender, final boolean sendForkId) {

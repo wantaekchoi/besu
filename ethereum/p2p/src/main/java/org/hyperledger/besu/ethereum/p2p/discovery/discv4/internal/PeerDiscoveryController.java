@@ -392,7 +392,12 @@ public class PeerDiscoveryController {
         matchInteraction(packet)
             .ifPresent(
                 interaction -> {
-                  if (filterOnEnrForkId) {
+                  // A PONG without enr-seq means the peer has no record to send (EIP-868).
+                  if (filterOnEnrForkId
+                      && packet
+                          .getPacketData(PongPacketData.class)
+                          .flatMap(PongPacketData::getEnrSeq)
+                          .isPresent()) {
                     requestENR(peer);
                   }
                   bondingPeers.invalidate(peerId);
