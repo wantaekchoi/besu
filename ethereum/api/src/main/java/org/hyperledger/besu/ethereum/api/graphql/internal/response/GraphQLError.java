@@ -39,6 +39,12 @@ public enum GraphQLError {
   /** Error code -32602. This error occurs when the parameters provided are invalid. */
   INVALID_PARAMS(-32602, "Invalid params"),
 
+  /**
+   * Error code -32602. This error occurs when the transaction type is not accepted at the chain
+   * head or the transaction is malformed for its type.
+   */
+  INVALID_TRANSACTION_TYPE(-32602, "Invalid transaction type"),
+
   /** Error code -32603. This error occurs when there is an internal error. */
   INTERNAL_ERROR(-32603, "Internal error"),
 
@@ -48,6 +54,11 @@ public enum GraphQLError {
 
   /** Error code -32002. This error occurs when the transaction signature is invalid. */
   INVALID_TRANSACTION_SIGNATURE(-32002, "Invalid signature"),
+
+  /** Error code -32002. This error occurs when the transaction pool is not enabled. */
+  TX_POOL_DISABLED(
+      -32002,
+      "Transaction pool not enabled. (Either txpool explicitly disabled, or node not yet in sync)."),
 
   /** Error code -32003. This error occurs when the intrinsic gas exceeds the gas limit. */
   INTRINSIC_GAS_EXCEEDS_LIMIT(-32003, "Intrinsic gas exceeds gas limit"),
@@ -59,10 +70,19 @@ public enum GraphQLError {
   TRANSACTION_UPFRONT_COST_EXCEEDS_BALANCE(-32004, "Upfront cost exceeds account balance"),
 
   /**
+   * Error code -32004. This error occurs when the account balance cannot cover the transferred
+   * value.
+   */
+  INSUFFICIENT_FUNDS_FOR_TRANSFER(-32004, "Insufficient funds for transfer"),
+
+  /**
    * Error code -32005. This error occurs when the transaction gas limit exceeds the block gas
    * limit.
    */
   EXCEEDS_BLOCK_GAS_LIMIT(-32005, "Transaction gas limit exceeds block gas limit"),
+
+  /** Error code -32005. This error occurs when the transaction gas limit exceeds the cap. */
+  EXCEEDS_TRANSACTION_GAS_LIMIT(-32005, "Transaction gas limit cap exceeded"),
 
   /** Error code -32006. This error occurs when the nonce value is too high. */
   INCORRECT_NONCE(-32006, "Nonce too high"),
@@ -94,7 +114,42 @@ public enum GraphQLError {
       -32000, "Signatures with replay protection are not supported"),
 
   /** Error code -32000. This error occurs when the transaction fee cap is exceeded. */
-  TX_FEECAP_EXCEEDED(-32000, "Transaction fee cap exceeded");
+  TX_FEECAP_EXCEEDED(-32000, "Transaction fee cap exceeded"),
+
+  /** Error code -32000. This error occurs when a replay protected signature is required. */
+  REPLAY_PROTECTED_SIGNATURE_REQUIRED(-32000, "ChainId is required"),
+
+  /** Error code -32000. This error occurs when the transaction exceeds the maximum size. */
+  EXCEEDS_MAX_TX_BYTES(-32000, "Transaction size exceeds the maximum allowed size"),
+
+  /**
+   * Error code -32000. This error occurs when the max priority fee per gas exceeds the max fee per
+   * gas.
+   */
+  MAX_PRIORITY_FEE_PER_GAS_EXCEEDS_MAX_FEE_PER_GAS(
+      -32000, "Max priority fee per gas exceeds max fee per gas"),
+
+  /** Error code -32000. This error occurs when the transaction is already in the pool. */
+  TRANSACTION_ALREADY_KNOWN(-32000, "Known transaction"),
+
+  /**
+   * Error code -32000. This error occurs when a replacement transaction does not pay enough more
+   * than the transaction it replaces.
+   */
+  TRANSACTION_REPLACEMENT_UNDERPRICED(-32000, "Replacement transaction underpriced"),
+
+  /**
+   * Error code -32000. This error occurs when the transaction nonce is too far ahead of the sender
+   * nonce.
+   */
+  NONCE_TOO_FAR_IN_FUTURE_FOR_SENDER(
+      -32000, "Transaction nonce is too distant from current sender nonce"),
+
+  /** Error code -32000. This error occurs when the total blob gas is too high. */
+  TOTAL_BLOB_GAS_TOO_HIGH(-32000, "Total blob gas too high"),
+
+  /** Error code -32000. This error occurs when a plugin marks the transaction as invalid. */
+  PLUGIN_TX_VALIDATOR(-32000, "Plugin has marked the transaction as invalid");
 
   private final int code;
   private final String message;
@@ -139,6 +194,7 @@ public enum GraphQLError {
       case REPLAY_PROTECTED_SIGNATURES_NOT_SUPPORTED -> REPLAY_PROTECTED_SIGNATURES_NOT_SUPPORTED;
       case INVALID_SIGNATURE -> INVALID_TRANSACTION_SIGNATURE;
       case UPFRONT_GAS_COST_EXCEEDS_BALANCE -> TRANSACTION_UPFRONT_COST_EXCEEDS_BALANCE;
+      case INSUFFICIENT_FUNDS_FOR_TRANSFER -> INSUFFICIENT_FUNDS_FOR_TRANSFER;
       case NONCE_TOO_LOW -> NONCE_TOO_LOW;
       case NONCE_TOO_HIGH -> INCORRECT_NONCE;
       case INTRINSIC_GAS_EXCEEDS_GAS_LIMIT -> INTRINSIC_GAS_EXCEEDS_LIMIT;
@@ -147,6 +203,18 @@ public enum GraphQLError {
       case CHAIN_HEAD_WORLD_STATE_NOT_AVAILABLE -> CHAIN_HEAD_WORLD_STATE_NOT_AVAILABLE;
       case GAS_PRICE_TOO_LOW -> GAS_PRICE_TOO_LOW;
       case TX_FEECAP_EXCEEDED -> TX_FEECAP_EXCEEDED;
+      case EXCEEDS_TRANSACTION_GAS_LIMIT -> EXCEEDS_TRANSACTION_GAS_LIMIT;
+      case REPLAY_PROTECTED_SIGNATURE_REQUIRED -> REPLAY_PROTECTED_SIGNATURE_REQUIRED;
+      case EXCEEDS_MAX_TX_BYTES -> EXCEEDS_MAX_TX_BYTES;
+      case MAX_PRIORITY_FEE_PER_GAS_EXCEEDS_MAX_FEE_PER_GAS ->
+          MAX_PRIORITY_FEE_PER_GAS_EXCEEDS_MAX_FEE_PER_GAS;
+      case INVALID_TRANSACTION_FORMAT -> INVALID_TRANSACTION_TYPE;
+      case TRANSACTION_ALREADY_KNOWN -> TRANSACTION_ALREADY_KNOWN;
+      case TRANSACTION_REPLACEMENT_UNDERPRICED -> TRANSACTION_REPLACEMENT_UNDERPRICED;
+      case NONCE_TOO_FAR_IN_FUTURE_FOR_SENDER -> NONCE_TOO_FAR_IN_FUTURE_FOR_SENDER;
+      case TOTAL_BLOB_GAS_TOO_HIGH -> TOTAL_BLOB_GAS_TOO_HIGH;
+      case TX_POOL_DISABLED -> TX_POOL_DISABLED;
+      case PLUGIN_TX_VALIDATOR -> PLUGIN_TX_VALIDATOR;
       default -> INTERNAL_ERROR;
     };
   }
