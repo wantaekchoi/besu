@@ -856,11 +856,15 @@ public abstract class AbstractTransactionPoolTest extends AbstractTransactionPoo
     addAndAssertTransactionViaApiValid(tx, noLocalPriority);
   }
 
-  @Test
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
   @DisabledIf("isBaseFeeMarket")
-  public void addLocalTransaction_strictReplayProtectionOn_txWithoutChainId_chainIdIsConfigured() {
+  public void addLocalTransaction_strictReplayProtectionOn_txWithoutChainId_chainIdIsConfigured(
+      final boolean noLocalPriority) {
     protocolSupportsTxReplayProtection(1337, true);
-    transactionPool = createTransactionPool(b -> b.strictTransactionReplayProtectionEnabled(true));
+    transactionPool =
+        createTransactionPool(
+            b -> b.strictTransactionReplayProtectionEnabled(true).noLocalPriority(noLocalPriority));
     final Transaction tx = createTransactionWithoutChainId(1);
     givenTransactionIsValid(tx);
 
@@ -877,6 +881,22 @@ public abstract class AbstractTransactionPoolTest extends AbstractTransactionPoo
     givenTransactionIsValid(tx);
 
     addAndAssertRemoteTransactionsValid(tx);
+  }
+
+  @Test
+  @DisabledIf("isBaseFeeMarket")
+  public void
+      addRemotePriorityTransactions_strictReplayProtectionOn_txWithoutChainId_chainIdIsConfigured() {
+    protocolSupportsTxReplayProtection(1337, true);
+    final Transaction tx = createTransactionWithoutChainId(1);
+    transactionPool =
+        createTransactionPool(
+            b ->
+                b.strictTransactionReplayProtectionEnabled(true)
+                    .prioritySenders(List.of(tx.getSender())));
+    givenTransactionIsValid(tx);
+
+    addAndAssertRemotePriorityTransactionsValid(tx);
   }
 
   @ParameterizedTest
