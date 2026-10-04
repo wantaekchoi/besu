@@ -443,10 +443,14 @@ public class TransactionAdapter extends AdapterBase {
    * can be used by GraphQL.
    *
    * @param environment the data fetching environment.
-   * @return a List of LogAdapter objects representing the logs of the transaction. If the
-   *     transaction does not have a receipt, this method returns an empty list.
+   * @return an Optional containing a List of LogAdapter objects representing the logs of the
+   *     transaction, or an empty Optional if the transaction has not been mined yet. If the
+   *     transaction does not have a receipt, the list is empty.
    */
-  public List<LogAdapter> getLogs(final DataFetchingEnvironment environment) {
+  public Optional<List<LogAdapter>> getLogs(final DataFetchingEnvironment environment) {
+    if (transactionWithMetadata.getBlockNumber().isEmpty()) {
+      return Optional.empty();
+    }
     final BlockchainQueries query = getBlockchainQueries(environment);
     final ProtocolSchedule protocolSchedule =
         environment.getGraphQlContext().get(GraphQLContextType.PROTOCOL_SCHEDULE);
@@ -475,7 +479,7 @@ public class TransactionAdapter extends AdapterBase {
         results.add(new LogAdapter(log));
       }
     }
-    return results;
+    return Optional.of(results);
   }
 
   /**
@@ -562,9 +566,9 @@ public class TransactionAdapter extends AdapterBase {
    * receipt. It then encodes the BytesValueRLPOutput object and returns it.
    *
    * @param environment the data fetching environment.
-   * @return an Optional containing a Bytes object representing the raw receipt of the transaction.
+   * @return the raw receipt of the transaction, or empty bytes if it has no receipt yet.
    */
-  public Optional<Bytes> getRawReceipt(final DataFetchingEnvironment environment) {
+  public Bytes getRawReceipt(final DataFetchingEnvironment environment) {
     return getReceipt(environment)
         .map(
             receipt -> {
@@ -572,7 +576,8 @@ public class TransactionAdapter extends AdapterBase {
               TransactionReceiptEncoder.writeTo(
                   receipt.getReceipt(), rlpOutput, TransactionReceiptEncodingConfiguration.DEFAULT);
               return rlpOutput.encoded();
-            });
+            })
+        .orElse(Bytes.EMPTY);
   }
 
   /**

@@ -1,0 +1,17 @@
+{
+  "request": "{ pending { transactions { nonce logs { index } rawReceipt } } }",
+  "response": {
+    "data": {
+      "pending": {
+        "transactions": [
+          {
+            "nonce": "0x2a",
+            "logs": null,
+            "rawReceipt": "0x"
+          }
+        ]
+      }
+    }
+  },
+  "statusCode": 200
+}
