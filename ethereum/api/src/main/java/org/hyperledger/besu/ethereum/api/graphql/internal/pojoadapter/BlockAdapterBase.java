@@ -24,12 +24,14 @@ import org.hyperledger.besu.ethereum.api.query.BlockWithMetadata;
 import org.hyperledger.besu.ethereum.api.query.BlockchainQueries;
 import org.hyperledger.besu.ethereum.api.query.LogsQuery;
 import org.hyperledger.besu.ethereum.api.query.TransactionWithMetadata;
+import org.hyperledger.besu.ethereum.core.Block;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.Difficulty;
 import org.hyperledger.besu.ethereum.core.LogWithMetadata;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.mainnet.TransactionValidationParams;
 import org.hyperledger.besu.ethereum.rlp.BytesValueRLPOutput;
+import org.hyperledger.besu.ethereum.rlp.RLP;
 import org.hyperledger.besu.ethereum.transaction.CallParameter;
 import org.hyperledger.besu.ethereum.transaction.ImmutableCallParameter;
 import org.hyperledger.besu.ethereum.transaction.TransactionSimulator;
@@ -393,12 +395,7 @@ public class BlockAdapterBase extends AdapterBase {
     return query
         .getBlockchain()
         .getBlockBody(header.getBlockHash())
-        .map(
-            blockBody -> {
-              final BytesValueRLPOutput rlpOutput = new BytesValueRLPOutput();
-              blockBody.writeWrappedBodyTo(rlpOutput);
-              return rlpOutput.encoded();
-            })
+        .map(blockBody -> RLP.encode(new Block(header, blockBody)::writeTo))
         .orElse(Bytes.EMPTY);
   }
 
