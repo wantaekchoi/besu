@@ -220,6 +220,33 @@ public class TransactionPoolSaveRestoreTest extends AbstractTransactionPoolTestB
   }
 
   @Test
+  public void restoredLocalTransactionIsReAddedAsLocalAfterAReorg()
+      throws ExecutionException, InterruptedException, TimeoutException {
+    final Transaction transaction = createTransaction(0);
+    givenTransactionIsValid(transaction);
+
+    this.transactionPool =
+        createTransactionPool(b -> b.enableSaveRestore(true).saveFile(saveFilePath.toFile()));
+    addAndAssertTransactionViaApiValid(transaction, false);
+    transactionPool.setDisabled().get(10, TimeUnit.SECONDS);
+
+    // a new pool, as after a restart, restores the local transaction from the file
+    this.transactionPool =
+        createTransactionPool(b -> b.enableSaveRestore(true).saveFile(saveFilePath.toFile()));
+    await().until(() -> transactionPool.getPendingTransactions().size() == 1);
+
+    final BlockHeader commonParent = getHeaderForCurrentChainHead();
+    appendBlock(Difficulty.of(1000), commonParent, transaction);
+    assertTransactionNotPending(transaction);
+
+    final Block reorgFork1 = appendBlock(Difficulty.ONE, commonParent);
+    appendBlock(Difficulty.of(2000), reorgFork1.getHeader());
+
+    assertTransactionPending(transaction);
+    assertThat(getLocalTransactions()).contains(transaction);
+  }
+
+  @Test
   public void dumpFileWithoutScoreIsRestored() throws IOException {
 
     // create a save file with one local and one remote tx, both without score
