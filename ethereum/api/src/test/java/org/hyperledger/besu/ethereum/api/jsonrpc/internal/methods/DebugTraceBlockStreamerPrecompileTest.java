@@ -33,12 +33,16 @@ import org.hyperledger.besu.ethereum.core.ExecutionContextTestFixture;
 import org.hyperledger.besu.ethereum.core.MiningConfiguration;
 import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.debug.TraceOptions;
+import org.hyperledger.besu.ethereum.debug.TracerType;
+import org.hyperledger.besu.evm.tracing.OpCodeTracerConfigBuilder;
+import org.hyperledger.besu.evm.tracing.OpCodeTracerConfigBuilder.OpCodeTracerConfig;
 import org.hyperledger.besu.plugin.services.storage.DataStorageFormat;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -89,7 +93,7 @@ public class DebugTraceBlockStreamerPrecompileTest {
    */
   @Test
   public void streamingPathEmitsSyntheticFrameForDirectPrecompileCall() throws Exception {
-    final Block block = buildPrecompileBlock(0);
+    final Block block = buildPrecompileBlock();
     final DebugTraceBlockStreamer streamer =
         new DebugTraceBlockStreamer(
             block, TraceOptions.DEFAULT, fixture.getProtocolSchedule(), blockchainQueries);
@@ -109,7 +113,7 @@ public class DebugTraceBlockStreamerPrecompileTest {
    */
   @Test
   public void streamingAndAccumulatingPathsMatchForPrecompileCall() throws Exception {
-    final Block block = buildPrecompileBlock(0);
+    final Block block = buildPrecompileBlock();
     final DebugTraceBlockStreamer streamer =
         new DebugTraceBlockStreamer(
             block, TraceOptions.DEFAULT, fixture.getProtocolSchedule(), blockchainQueries);
@@ -128,19 +132,49 @@ public class DebugTraceBlockStreamerPrecompileTest {
         .isEqualTo(accRoot);
   }
 
+  @Test
+  public void streamingPathEmitsReturnDataWhenEnabled() throws Exception {
+    // STATICCALL to the IDENTITY precompile from contract creation code, so the steps after the
+    // call have return data
+    final Block block = buildBlock(null, Bytes.fromHexString("0x602060006020600060045afa00"));
+    final TraceOptions traceOptions =
+        new TraceOptions(
+            TracerType.OPCODE_TRACER,
+            OpCodeTracerConfigBuilder.createFrom(OpCodeTracerConfig.DEFAULT)
+                .traceReturnData(true)
+                .build(),
+            Map.of());
+    final DebugTraceBlockStreamer streamer =
+        new DebugTraceBlockStreamer(
+            block, traceOptions, fixture.getProtocolSchedule(), blockchainQueries);
+
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    streamer.streamTo(out, mapper, () -> true);
+    final JsonNode streamedRoot = mapper.readTree(out.toByteArray());
+    final JsonNode accRoot =
+        mapper.readTree(mapper.writeValueAsBytes(streamer.accumulateAll(() -> true)));
+
+    assertThat(accRoot.toString()).contains("\"returnData\"");
+    assertThat(streamedRoot).isEqualTo(accRoot);
+  }
+
   // ── helpers ──────────────────────────────────────────────────────────────
 
-  private Block buildPrecompileBlock(final int nonce) {
+  private Block buildPrecompileBlock() {
+    return buildBlock(IDENTITY_PRECOMPILE, Bytes.of(1, 2, 3, 4));
+  }
+
+  private Block buildBlock(final Address to, final Bytes payload) {
     final Transaction tx =
         Transaction.builder()
             .type(TransactionType.EIP1559)
-            .nonce(nonce)
+            .nonce(0)
             .maxPriorityFeePerGas(Wei.of(5))
             .maxFeePerGas(Wei.of(7))
             .gasLimit(100_000L)
-            .to(IDENTITY_PRECOMPILE)
+            .to(to)
             .value(Wei.ZERO)
-            .payload(Bytes.of(1, 2, 3, 4))
+            .payload(payload)
             .chainId(BigInteger.valueOf(42))
             .signAndBuild(KEY_PAIR);
 
