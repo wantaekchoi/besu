@@ -106,7 +106,7 @@ public class EthGetProof extends AbstractBlockParameterOrBlockHashMethod {
       return Arrays.stream(request.getRequiredParameter(1, String[].class))
           .map(UInt256::fromHexString)
           .collect(Collectors.toList());
-    } catch (JsonRpcParameterException e) {
+    } catch (JsonRpcParameterException | IllegalArgumentException e) {
       throw new InvalidJsonRpcParameters(
           "Invalid storage keys parameters (index 1)", RpcErrorType.INVALID_STORAGE_KEYS_PARAMS, e);
     }
