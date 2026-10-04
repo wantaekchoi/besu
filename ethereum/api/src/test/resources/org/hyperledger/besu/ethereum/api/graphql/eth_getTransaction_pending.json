@@ -1,0 +1,13 @@
+{
+  "request": "{transaction(hash : \"0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a\") {nonce gas block {number}}} ",
+  "response": {
+    "data": {
+      "transaction": {
+        "nonce": "0x2a",
+        "gas": "0x9fbf1",
+        "block": null
+      }
+    }
+  },
+  "statusCode": 200
+}

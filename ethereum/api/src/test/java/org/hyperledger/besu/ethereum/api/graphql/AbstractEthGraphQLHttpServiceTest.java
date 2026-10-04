@@ -17,6 +17,7 @@ package org.hyperledger.besu.ethereum.api.graphql;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.hyperledger.besu.datatypes.Hash;
 import org.hyperledger.besu.datatypes.TransactionType;
 import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.ProtocolContext;
@@ -63,6 +64,8 @@ public abstract class AbstractEthGraphQLHttpServiceTest {
   @TempDir private Path tempDir;
 
   private static BlockchainSetupUtil blockchainSetupUtil;
+  private static final Hash PENDING_TRANSACTION_HASH =
+      Hash.fromHexString("0x2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a");
 
   private final Vertx vertx = Vertx.vertx();
 
@@ -105,6 +108,15 @@ public abstract class AbstractEthGraphQLHttpServiceTest {
                         .gasLimit(654321)
                         .gasPrice(Wei.ONE)
                         .build())));
+    when(transactionPoolMock.getTransactionByHash(PENDING_TRANSACTION_HASH))
+        .thenReturn(
+            Optional.of(
+                Transaction.builder()
+                    .type(TransactionType.FRONTIER)
+                    .nonce(42)
+                    .gasLimit(654321)
+                    .gasPrice(Wei.ONE)
+                    .build()));
 
     final MutableBlockchain blockchain = blockchainSetupUtil.getBlockchain();
     ProtocolContext context =

@@ -433,9 +433,17 @@ public class GraphQLDataFetchers {
     return dataFetchingEnvironment -> {
       final BlockchainQueries blockchain =
           dataFetchingEnvironment.getGraphQlContext().get(GraphQLContextType.BLOCKCHAIN_QUERIES);
+      final TransactionPool transactionPool =
+          dataFetchingEnvironment.getGraphQlContext().get(GraphQLContextType.TRANSACTION_POOL);
       final Hash hash = dataFetchingEnvironment.getArgument("hash");
-      final Optional<TransactionWithMetadata> tran = blockchain.transactionByHash(hash);
-      return tran.map(this::getTransactionAdapter);
+      return blockchain
+          .transactionByHash(hash)
+          .map(this::getTransactionAdapter)
+          .or(
+              () ->
+                  transactionPool
+                      .getTransactionByHash(hash)
+                      .map(tx -> new TransactionAdapter(new TransactionWithMetadata(tx), null)));
     };
   }
 
