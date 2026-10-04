@@ -109,6 +109,16 @@ class EthGetProofTest {
   }
 
   @Test
+  void errorWhenStorageKeyIsNotHex() {
+    final JsonRpcRequestContext request =
+        requestWithParams(address.toString(), new String[] {"0xzz"}, "latest");
+
+    Assertions.assertThatThrownBy(() -> method.response(request))
+        .isInstanceOf(InvalidJsonRpcParameters.class)
+        .hasMessageContaining("Invalid storage keys parameters (index 1)");
+  }
+
+  @Test
   void defaultsToLatestWhenNoBlockSupplied() {
     // Per execution-apis the Block parameter is optional and defaults to 'latest'.
     // Omitting it must behave identically to explicitly passing "latest".
