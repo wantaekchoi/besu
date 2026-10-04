@@ -27,6 +27,8 @@ import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.LogWithMetadata;
 import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.TransactionReceipt;
+import org.hyperledger.besu.ethereum.core.encoding.EncodingContext;
+import org.hyperledger.besu.ethereum.core.encoding.TransactionEncoder;
 import org.hyperledger.besu.ethereum.core.encoding.receipt.TransactionReceiptEncoder;
 import org.hyperledger.besu.ethereum.core.encoding.receipt.TransactionReceiptEncodingConfiguration;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
@@ -543,15 +545,15 @@ public class TransactionAdapter extends AdapterBase {
   /**
    * Retrieves the raw transaction data.
    *
-   * <p>This method uses the writeTo method of the transaction to write the transaction data to a
-   * BytesValueRLPOutput object. It then encodes the BytesValueRLPOutput object and returns it.
+   * <p>Legacy transactions are returned RLP encoded, typed transactions as their type followed by
+   * the payload.
    *
    * @return an Optional containing a Bytes object representing the raw transaction data.
    */
   public Optional<Bytes> getRaw() {
-    final BytesValueRLPOutput rlpOutput = new BytesValueRLPOutput();
-    transactionWithMetadata.getTransaction().writeTo(rlpOutput);
-    return Optional.of(rlpOutput.encoded());
+    return Optional.of(
+        TransactionEncoder.encodeOpaqueBytes(
+            transactionWithMetadata.getTransaction(), EncodingContext.BLOCK_BODY));
   }
 
   /**
@@ -570,7 +572,9 @@ public class TransactionAdapter extends AdapterBase {
             receipt -> {
               final BytesValueRLPOutput rlpOutput = new BytesValueRLPOutput();
               TransactionReceiptEncoder.writeTo(
-                  receipt.getReceipt(), rlpOutput, TransactionReceiptEncodingConfiguration.DEFAULT);
+                  receipt.getReceipt(),
+                  rlpOutput,
+                  TransactionReceiptEncodingConfiguration.TRIE_ROOT);
               return rlpOutput.encoded();
             });
   }
