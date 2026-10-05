@@ -99,7 +99,7 @@ public class PendingStateAdapter extends AdapterBase {
     return blockchainQuery
         .getAndMapWorldState(latestBlockNumber, ws -> Optional.ofNullable(ws.get(addr)))
         .map(AccountAdapter::new)
-        .orElseGet(() -> new AccountAdapter(null));
+        .orElseGet(() -> new EmptyAccountAdapter(addr));
   }
 
   /**

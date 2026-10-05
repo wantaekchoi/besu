@@ -250,7 +250,7 @@ public class BlockAdapterBase extends AdapterBase {
     final Address address = environment.getArgument("address");
     return query
         .getAndMapWorldState(
-            bn, ws -> Optional.of(new AccountAdapter(ws.get(address), Optional.of(bn))))
+            bn, ws -> Optional.of(new AccountAdapter(address, ws.get(address), Optional.of(bn))))
         .get();
   }
 

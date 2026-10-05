@@ -117,7 +117,7 @@ public class AccountAdapter extends AdapterBase {
    */
   public Bytes getCode(final DataFetchingEnvironment environment) {
 
-    if (account.get() instanceof BonsaiAccount) {
+    if (account.orElse(null) instanceof BonsaiAccount) {
       final BlockchainQueries query = getBlockchainQueries(environment);
       return query
           .getAndMapWorldState(
@@ -139,7 +139,7 @@ public class AccountAdapter extends AdapterBase {
     final BlockchainQueries query = getBlockchainQueries(environment);
     final Bytes32 slot = environment.getArgument("slot");
 
-    if (account.get() instanceof BonsaiAccount) {
+    if (account.orElse(null) instanceof BonsaiAccount) {
       return query
           .getAndMapWorldState(
               blockNumber.orElse(query.headBlockNumber()),

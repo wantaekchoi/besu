@@ -1,0 +1,17 @@
+{
+  "request": "{ block(number:\"0x19\") { account(address: \"0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef\") { address balance transactionCount code storage(slot: \"0x0000000000000000000000000000000000000000000000000000000000000000\") } } }",
+  "response": {
+    "data": {
+      "block": {
+        "account": {
+          "address": "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+          "balance": "0x0",
+          "transactionCount": "0x0",
+          "code": "0x",
+          "storage": "0x0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      }
+    }
+  },
+  "statusCode": 200
+}
