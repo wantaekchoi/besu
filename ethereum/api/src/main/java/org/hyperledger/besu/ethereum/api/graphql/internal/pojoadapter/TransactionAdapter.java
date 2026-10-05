@@ -163,7 +163,7 @@ public class TransactionAdapter extends AdapterBase {
     return query
         .getAndMapWorldState(
             blockNumber,
-            mutableWorldState -> Optional.of(new AccountAdapter(mutableWorldState.get(addr))))
+            mutableWorldState -> Optional.of(new AccountAdapter(addr, mutableWorldState.get(addr))))
         .orElse(new EmptyAccountAdapter(addr));
   }
 
@@ -428,7 +428,7 @@ public class TransactionAdapter extends AdapterBase {
         final long blockNumber = bn.orElseGet(txBlockNumber::get);
         return query
             .getAndMapWorldState(
-                blockNumber, ws -> Optional.of(new AccountAdapter(ws.get(addr.get()))))
+                blockNumber, ws -> Optional.of(new AccountAdapter(addr.get(), ws.get(addr.get()))))
             .or(() -> Optional.of(new EmptyAccountAdapter(addr.get())));
       }
     }

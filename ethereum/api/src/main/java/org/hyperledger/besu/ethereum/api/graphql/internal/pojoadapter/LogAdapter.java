@@ -106,7 +106,8 @@ public class LogAdapter extends AdapterBase {
 
     final Address logger = logWithMetadata.getLogger();
     return query
-        .getAndMapWorldState(blockNumber, ws -> Optional.of(new AccountAdapter(ws.get(logger))))
+        .getAndMapWorldState(
+            blockNumber, ws -> Optional.of(new AccountAdapter(logger, ws.get(logger))))
         .orElse(new EmptyAccountAdapter(logger));
   }
 }
