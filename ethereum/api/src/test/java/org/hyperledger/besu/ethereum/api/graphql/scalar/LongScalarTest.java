@@ -50,6 +50,15 @@ public class LongScalarTest {
   }
 
   @Test
+  public void parseIntegerValueTest() {
+    assertThat(
+            scalar
+                .getCoercing()
+                .parseValue(value.intValue(), GraphQLContext.newContext().build(), Locale.ENGLISH))
+        .isEqualTo(value);
+  }
+
+  @Test
   public void parseStringValueTest() {
     assertThat(
             scalar

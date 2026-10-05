@@ -521,7 +521,7 @@ public class Scalars {
             final Object input, final GraphQLContext graphQLContext, final Locale locale)
             throws CoercingParseValueException {
           if (input instanceof Number number) {
-            return number;
+            return number.longValue();
           } else if (input instanceof String string) {
             final String value = string.toLowerCase(Locale.ROOT);
             if (value.startsWith("0x")) {
